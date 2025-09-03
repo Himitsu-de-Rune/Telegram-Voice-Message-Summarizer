@@ -1,39 +1,45 @@
-🎙️ Telegram Voice Message Summarizer
+# 🎙️ Telegram Voice Message Summarizer
 
 This project is a Telegram bot that converts voice messages into text and generates a short summary.
 
-✨ Features
+---
 
-Converts Telegram voice messages (.ogg → .wav) using FFmpeg.
+## ✨ Features
 
-Transcribes audio to text with Google Speech Recognition.
+-Converts Telegram voice messages (.ogg → .wav) using FFmpeg.
 
-Summarizes long transcripts into concise text using a Hugging Face model (cointegrated/rut5-base-multitask).
+-Transcribes audio to text with Google Speech Recognition.
 
-Automatically deletes temporary audio files after processing.
+-Summarizes long transcripts into concise text using a Hugging Face model (cointegrated/rut5-base-multitask).
 
-Built with Python and pyTelegramBotAPI.
+-Automatically deletes temporary audio files after processing.
 
-🛠️ Tech Stack
+-Built with Python and pyTelegramBotAPI.
 
-Python 3
+---
 
-FFmpeg
+## 🛠️ Tech Stack
 
-SpeechRecognition
+-Python 3
 
-Hugging Face Transformers (for summarization)
+-FFmpeg
 
-PyTelegramBotAPI (Telegram bot framework)
+-SpeechRecognition
 
-🚀 How it works
+-Hugging Face Transformers (for summarization)
 
-A user sends a voice message to the bot.
+-PyTelegramBotAPI (Telegram bot framework)
 
-The bot saves and converts it into .wav.
+---
 
-The audio is transcribed into text.
+## 🚀 How it works
 
-The text is summarized by a local Hugging Face model.
+-A user sends a voice message to the bot.
 
-The user receives a short, meaningful summary.
+-The bot saves and converts it into .wav.
+
+-The audio is transcribed into text.
+
+-The text is summarized by a local Hugging Face model.
+
+-The user receives a short, meaningful summary.
