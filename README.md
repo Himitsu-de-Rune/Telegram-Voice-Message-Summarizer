@@ -1,6 +1,6 @@
 # 🎙️ Telegram Voice Message Summarizer
 
-This project is a Telegram bot that converts voice messages into text and generates a short summary.
+This project is a Telegram bot that converts voice and video messages into text and generates a short summary.
 
 ---
 
