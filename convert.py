@@ -13,8 +13,7 @@ class Converter:
             r'C:\Users\Himitsu\Desktop\Projects\MyBot\ffmpeg\bin\ffmpeg.exe',
             '-v', 'quiet',
             '-i', path_to_file,
-            wav_path
-        ])
+            wav_path])
 
         self.wav_file = wav_path
 
@@ -37,5 +36,6 @@ class Converter:
 
         if os.path.exists(self.wav_file):
             os.remove(self.wav_file)
+
 
         return " ".join(full_text)
