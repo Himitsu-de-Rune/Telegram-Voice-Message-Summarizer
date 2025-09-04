@@ -75,11 +75,11 @@ def help(message: types.Message):
     bot.send_message(message.chat.id, help_mess[get_lang(message)])
 
 @bot.message_handler(commands=['heart'])
-def help(message: types.Message):
+def heart(message: types.Message):
     bot.send_photo(message.chat.id, open('photo1.jpg', 'rb'))
     if make_progress('photo1', message.chat.id):
-            new_message = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_a_progress(get_prog(message), message)}', 
-                           'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_a_progress(get_prog(message), message)}'}
+            new_message = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
+                           'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(message.chat.id, new_message[get_lang(message)])
             if get_prog(message) == 4:
                 new_message = {'ru': 'А ты не промах. Ты открыл все карточки!', 
@@ -87,18 +87,18 @@ def help(message: types.Message):
                 bot.send_message(message.chat.id, new_message[get_lang(message)])
 
 @bot.message_handler(commands=['progress'])
-def help(message: types.Message):
+def progress(message: types.Message):
     if get_prog(message) == 0:
         mess = {'ru': 'Ты еще не нашел ни одной карточки', 
                 'en': "You haven't found any cards yet"}
         bot.send_message(message.chat.id, mess[get_lang(message)])
     elif get_prog(message) == 1:
-        mess = {'ru': f'Ты нашел только {get_prog(message)} карточу\nТвой прогресс: {draw_a_progress(get_prog(message), message)}', 
-                'en': f"You found only {get_prog(message)} card\nYou're progress: {draw_a_progress(get_prog(message), message)}"}
+        mess = {'ru': f'Ты нашел только {get_prog(message)} карточу\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
+                'en': f"You found only {get_prog(message)} card\nYou're progress: {draw_progress(get_prog(message), message)}"}
         bot.send_message(message.chat.id, mess[get_lang(message)])
     elif get_prog(message) in (2, 3):
-        mess = {'ru': f'Ты нашел {get_prog(message)} карточи\nТвой прогресс: {draw_a_progress(get_prog(message), message)}', 
-                'en': f"You found {get_prog(message)} cards\nYou're progress: {draw_a_progress(get_prog(message), message)}"}
+        mess = {'ru': f'Ты нашел {get_prog(message)} карточи\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
+                'en': f"You found {get_prog(message)} cards\nYou're progress: {draw_progress(get_prog(message), message)}"}
         bot.send_message(message.chat.id, mess[get_lang(message)])
     elif get_prog(message) >= 4:
         mess = {'ru': 'Ты нашел все карточки!', 
@@ -141,8 +141,8 @@ def process_audio(message: types.Message, file_ext):
                 'en': "So big, we'll have to wait"}
         bot.send_photo(message.chat.id, open('photo4.jpg', 'rb'), mess[get_lang(message)])
         if make_progress('photo4', message.chat.id):
-            mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_a_progress(get_prog(message), message)}', 
-                   'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_a_progress(get_prog(message), message)}'}
+            mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
+                   'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(message.chat.id, mess[get_lang(message)])
             if get_prog(message) == 4:
                 mess = {'ru': 'А ты не промах. Ты открыл все карточки!', 
@@ -169,8 +169,8 @@ def process_audio(message: types.Message, file_ext):
             mess = {'ru': 'Тебе не надоело?', 'en': "Aren't you tired of this?"}
             bot.send_photo(message.chat.id, open('photo3.jpg', 'rb'), mess[get_lang(message)])
             if make_progress('photo3', message.chat.id):
-                mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_a_progress(get_prog(message), message)}', 
-                        'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_a_progress(get_prog(message), message)}'}
+                mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
+                        'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
                 bot.send_message(message.chat.id, mess[get_lang(message)])
                 if get_prog(message) == 4:
                     mess = {'ru': 'А ты не промах. Ты открыл все карточки!', 
@@ -321,8 +321,8 @@ def get_mark(message: types.Message):
                 'en': "Thank you for the maximum rating!"}
         bot.send_photo(message.chat.id, open('photo2.jpg', 'rb'), mess[get_lang(message)])
         if make_progress('photo2', message.chat.id):
-            mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_a_progress(get_prog(message), message)}', 
-                   'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_a_progress(get_prog(message), message)}'}
+            mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
+                   'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(message.chat.id, mess[get_lang(message)])
             if get_prog(message) == 4:
                 mess = {'ru': 'А ты не промах. Ты открыл все карточки!', 
@@ -340,7 +340,7 @@ def get_mark(message: types.Message):
     "new_chat_photo", "delete_chat_photo", "group_chat_created",
     "supergroup_chat_created", "channel_chat_created",
     "migrate_to_chat_id", "migrate_from_chat_id", "pinned_message"])
-def get_text_message(message: types.Message):
+def get_wrong_message(message: types.Message):
     mess = {'ru': 'Я расшифровываю только голосовые и видеосообщения', 
             'en': "I only transcribe voice and video messages"}
     bot.send_message(message.chat.id, mess[get_lang(message)])
@@ -360,7 +360,7 @@ def make_progress(photo_name: str, chat_id: int) -> bool:
         return True
     return False
 
-def draw_a_progress(progress: int, message: types.Message) -> str:
+def draw_progress(progress: int, message: types.Message) -> str:
     paint = []
     paint.append('[')
     if progress == 0:
