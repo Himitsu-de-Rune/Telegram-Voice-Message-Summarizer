@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import logging
 import telebot
 import config
@@ -20,12 +21,14 @@ user_count = {}
 user_lang = {}
 user_progress = {}
 user_photos = {}
+user_start_time ={}
 
 keys = [str(i) for i in range(1, 11)]
 
 @bot.message_handler(commands=['start']) 
 def start(message: types.Message): 
     name = message.chat.first_name if message.chat.first_name else 'No_name' 
+    user_start_time[message.chat.id] = time.time()
     user_count[message.chat.id] = 0 
     user_progress[message.chat.id] = 0
     user_photos[message.chat.id] = ['photo1', 'photo2', 'photo3', 'photo4']
@@ -78,12 +81,12 @@ def help(message: types.Message):
 def heart(message: types.Message):
     bot.send_photo(message.chat.id, open('photo1.jpg', 'rb'))
     if make_progress('photo1', message.chat.id):
-            new_message = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
+            new_message = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                            'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(message.chat.id, new_message[get_lang(message)])
             if get_prog(message) == 4:
-                new_message = {'ru': 'А ты не промах. Ты открыл все карточки!', 
-                               'en': "You're no slouch. You've opened all the cards!"}
+                new_message = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user_start_time[message.chat.id])//60} минут', 
+                               'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user_start_time[message.chat.id])//60} minutes to do this"}
                 bot.send_message(message.chat.id, new_message[get_lang(message)])
 
 @bot.message_handler(commands=['progress'])
@@ -113,13 +116,15 @@ def get_lang(message: types.Message) -> str:
 
 @bot.message_handler(commands=['ru'])
 def set_ru(message: types.Message):
-    user_lang[message.chat.id] = 'ru'
-    bot.send_message(message.chat.id, "Теперь говорим по-русски")
+    if get_lang(message) != 'ru':
+        user_lang[message.chat.id] = 'ru'
+        bot.send_message(message.chat.id, "Let's speak some Russian")
 
 @bot.message_handler(commands=['en'])
 def set_en(message: types.Message):
-    user_lang[message.chat.id] = 'en'
-    bot.send_message(message.chat.id, "Let's speak English")
+    if get_lang(message) != 'en':
+        user_lang[message.chat.id] = 'en'
+        bot.send_message(message.chat.id, "Давай поговорим по-английски")
 
 @bot.message_handler(content_types=['voice'])
 def get_audio_messages(message: types.Message):
@@ -141,12 +146,12 @@ def process_audio(message: types.Message, file_ext):
                 'en': "So big, we'll have to wait"}
         bot.send_photo(message.chat.id, open('photo4.jpg', 'rb'), mess[get_lang(message)])
         if make_progress('photo4', message.chat.id):
-            mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
+            mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                    'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(message.chat.id, mess[get_lang(message)])
             if get_prog(message) == 4:
-                mess = {'ru': 'А ты не промах. Ты открыл все карточки!', 
-                        'en': "You're no slouch. You've opened all the cards!"}
+                mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user_start_time[message.chat.id])//60} минут', 
+                        'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user_start_time[message.chat.id])//60} minutes to do this"}
                 bot.send_message(message.chat.id, mess[get_lang(message)])
 
     elif duration > 50:
@@ -169,12 +174,12 @@ def process_audio(message: types.Message, file_ext):
             mess = {'ru': 'Тебе не надоело?', 'en': "Aren't you tired of this?"}
             bot.send_photo(message.chat.id, open('photo3.jpg', 'rb'), mess[get_lang(message)])
             if make_progress('photo3', message.chat.id):
-                mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
+                mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                         'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
                 bot.send_message(message.chat.id, mess[get_lang(message)])
                 if get_prog(message) == 4:
-                    mess = {'ru': 'А ты не промах. Ты открыл все карточки!', 
-                            'en': "You're no slouch. You've opened all the cards!"}
+                    mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user_start_time[message.chat.id])//60} минут', 
+                            'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user_start_time[message.chat.id])//60} minutes to do this"}
                     bot.send_message(message.chat.id, mess[get_lang(message)])
     except KeyError:
         user_count[message.chat.id] = 1
@@ -189,7 +194,7 @@ def process_audio(message: types.Message, file_ext):
         return
     if has_english(message_text):
         mess = {'ru': 'О, Вы из Англии?', 
-                'en': "Oh, aren't You from England?"}
+                'en': "Oh, aren't you from England?"}
         bot.send_message(message.chat.id, mess[get_lang(message)])
     
     if duration > 5:
@@ -321,12 +326,12 @@ def get_mark(message: types.Message):
                 'en': "Thank you for the maximum rating!"}
         bot.send_photo(message.chat.id, open('photo2.jpg', 'rb'), mess[get_lang(message)])
         if make_progress('photo2', message.chat.id):
-            mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку.\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
+            mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                    'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(message.chat.id, mess[get_lang(message)])
             if get_prog(message) == 4:
-                mess = {'ru': 'А ты не промах. Ты открыл все карточки!', 
-                        'en': "You're no slouch. You've opened all the cards!"}
+                mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user_start_time[message.chat.id])//60} минут', 
+                        'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user_start_time[message.chat.id])//60} minutes to do this"}
                 bot.send_message(message.chat.id, mess[get_lang(message)])
     else:
         mess = {'ru': 'Спасибо за оценку! Отправляй еще голосовые, если надо', 
@@ -366,7 +371,7 @@ def draw_progress(progress: int, message: types.Message) -> str:
     if progress == 0:
         mess = {'ru': 'Авторизуйся с помощью /start для отображения прогресса', 
                 'en': "Login with /start to display progress"}
-        paint.append(mess[get_lang(message)])
+        return ''.join(mess[get_lang(message)])
     elif progress in [1, 2, 3]:
         for _ in range(progress * 3 - 1):
             paint.append('—')
@@ -376,7 +381,7 @@ def draw_progress(progress: int, message: types.Message) -> str:
     elif progress == 4:
         for _ in range(12):
             paint.append('—')
-    paint.append(']')
+    paint.append(f'] {progress*25}%')
     return ''.join(paint)
 
 
