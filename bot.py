@@ -79,7 +79,7 @@ def help(message: types.Message):
 
 @bot.message_handler(commands=['heart'])
 def heart(message: types.Message):
-    bot.send_photo(message.chat.id, open('photo1.jpg', 'rb'))
+    bot.send_photo(message.chat.id, open('photo1.jpg', 'rb'), message_effect_id="5159385139981059251")
     if make_progress('photo1', message.chat.id):
             new_message = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                            'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
@@ -87,7 +87,7 @@ def heart(message: types.Message):
             if get_prog(message) == 4:
                 new_message = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user_start_time[message.chat.id])//60} минут', 
                                'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user_start_time[message.chat.id])//60} minutes to do this"}
-                bot.send_message(message.chat.id, new_message[get_lang(message)])
+                bot.send_message(message.chat.id, new_message[get_lang(message)], message_effect_id="5046509860389126442")
 
 @bot.message_handler(commands=['progress'])
 def progress(message: types.Message):
@@ -142,9 +142,9 @@ def process_audio(message: types.Message, file_ext):
     file_name = str(message.message_id) + file_ext
 
     if duration > 200:
-        mess = {'ru': 'Такое большое, придется подождать', 
-                'en': "So big, we'll have to wait"}
-        bot.send_photo(message.chat.id, open('photo4.jpg', 'rb'), mess[get_lang(message)])
+        mess = {'ru': 'Такое большое🥵 придется подождать', 
+                'en': "So big🥵 we'll have to wait"}
+        bot.send_photo(message.chat.id, open('photo4.jpg', 'rb'), mess[get_lang(message)], has_spoiler=True)
         if make_progress('photo4', message.chat.id):
             mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                    'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
@@ -152,7 +152,7 @@ def process_audio(message: types.Message, file_ext):
             if get_prog(message) == 4:
                 mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user_start_time[message.chat.id])//60} минут', 
                         'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user_start_time[message.chat.id])//60} minutes to do this"}
-                bot.send_message(message.chat.id, mess[get_lang(message)])
+                bot.send_message(message.chat.id, mess[get_lang(message)], message_effect_id="5046509860389126442")
 
     elif duration > 50:
         mess = {'ru': 'Сообщение большое, придется подождать', 
@@ -164,13 +164,13 @@ def process_audio(message: types.Message, file_ext):
 
     converter = Converter(file_name)
     os.remove(file_name)
+
     try:
-        user_count[message.chat.id] += 1
-        if user_count[message.chat.id] == 5:
+        if user_count[message.chat.id] == 4:
             mess = {'ru': 'Автоматическое продление подписки на 1 месяц🗓️ С вашей карты списано $3.99💳 Спасибо, что остаетесь с нами!',
                     'en': "Automatic renewal of subscription for 1 month🗓️ $3.99 is written from your card💳 Thank you for staying with us!"}
             bot.send_message(message.chat.id, mess[get_lang(message)])
-        elif user_count[message.chat.id] == 10:
+        elif user_count[message.chat.id] == 9:
             mess = {'ru': 'Тебе не надоело?', 'en': "Aren't you tired of this?"}
             bot.send_photo(message.chat.id, open('photo3.jpg', 'rb'), mess[get_lang(message)])
             if make_progress('photo3', message.chat.id):
@@ -180,9 +180,9 @@ def process_audio(message: types.Message, file_ext):
                 if get_prog(message) == 4:
                     mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user_start_time[message.chat.id])//60} минут', 
                             'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user_start_time[message.chat.id])//60} minutes to do this"}
-                    bot.send_message(message.chat.id, mess[get_lang(message)])
+                    bot.send_message(message.chat.id, mess[get_lang(message)], message_effect_id="5046509860389126442")
     except KeyError:
-        user_count[message.chat.id] = 1
+        pass
 
     message_text = converter.audio_to_text()
     user_voice_texts[message.chat.id] = message_text
@@ -192,6 +192,12 @@ def process_audio(message: types.Message, file_ext):
                 'en': "I can't hear anything, try again"}
         bot.send_message(message.chat.id, mess[get_lang(message)])
         return
+    
+    try:
+        user_count[message.chat.id] += 1
+    except KeyError:
+        user_count[message.chat.id] = 1
+    
     if has_english(message_text):
         mess = {'ru': 'О, Вы из Англии?', 
                 'en': "Oh, aren't you from England?"}
@@ -324,7 +330,7 @@ def get_mark(message: types.Message):
     if message.text == '10':
         mess = {'ru': 'Спасибо за максимальную оценку!', 
                 'en': "Thank you for the maximum rating!"}
-        bot.send_photo(message.chat.id, open('photo2.jpg', 'rb'), mess[get_lang(message)])
+        bot.send_photo(message.chat.id, open('photo2.jpg', 'rb'), mess[get_lang(message)], message_effect_id="5104841245755180586")
         if make_progress('photo2', message.chat.id):
             mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                    'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
@@ -332,7 +338,7 @@ def get_mark(message: types.Message):
             if get_prog(message) == 4:
                 mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user_start_time[message.chat.id])//60} минут', 
                         'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user_start_time[message.chat.id])//60} minutes to do this"}
-                bot.send_message(message.chat.id, mess[get_lang(message)])
+                bot.send_message(message.chat.id, mess[get_lang(message)], message_effect_id="5046509860389126442")
     else:
         mess = {'ru': 'Спасибо за оценку! Отправляй еще голосовые, если надо', 
                 'en': "Thanks for the rating! Send more voicemails if needed"}
