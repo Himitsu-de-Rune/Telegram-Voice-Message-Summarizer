@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import random
 import logging
 import telebot
 import config
@@ -37,7 +38,7 @@ def get_prog(message: types.Message) -> int:
 
 def get_photos(chat_id: int):
     user = get_user(chat_id)
-    return (user.get("photos") or "").split(",") if user.get("photos") else []
+    return user.get("photos").split(",") if user.get("photos") else []
 
 def save_photos(chat_id: int, photos: list, progress: int):
     db.save_user(chat_id, photos=",".join(photos), progress=progress)
@@ -117,8 +118,8 @@ def handle_name(message: types.Message):
 
 @bot.message_handler(commands=['help'])
 def help(message: types.Message):
-    help_mess = {'ru': 'Рекомендую начать диалог с команды /start (сбрасывает прогресс). Затем пиши и отправляй голосовые или видеосообщения, я расшифрую! \nДоступные команды: \n/start \n/help \n/heart \n/progress \n/ru \n/en',
-    'en': "It is recommended to start a dialogue with the /start command (resets progress). Then write and send voice or video messages, I will decipher! \nAvailable commands: \n/start \n/help \n/heart \n/progress \n/ru \n/en"}
+    help_mess = {'ru': 'Рекомендую начать диалог с команды /start (сбрасывает прогресс). Затем пиши и отправляй голосовые или видеосообщения, я расшифрую! \nДоступные команды: \n/start \n/help \n/heart \n/progress \n/hint \n/ru \n/en',
+    'en': "It is recommended to start a dialogue with the /start command (resets progress). Then write and send voice or video messages, I will decipher! \nAvailable commands: \n/start \n/help \n/heart \n/progress \n/hint \n/ru \n/en"}
     bot.send_message(message.chat.id, help_mess[get_lang(message)])
 
 @bot.message_handler(commands=['heart'])
@@ -142,14 +143,43 @@ def progress(message: types.Message):
                 'en': "You haven't found any cards yet"}
     elif prog == 1:
         mess = {'ru': f'Ты нашел только {prog} карточу\nТвой прогресс: {draw_progress(prog, message)}',
-                'en': f"You found only {prog} card\nYou're progress: {draw_progress(prog, message)}"}
+                'en': f"You found only {prog} card\nYour progress: {draw_progress(prog, message)}"}
     elif prog in (2, 3):
         mess = {'ru': f'Ты нашел {prog} карточи\nТвой прогресс: {draw_progress(prog, message)}',
-                'en': f"You found {prog} cards\nYou're progress: {draw_progress(prog, message)}"}
+                'en': f"You found {prog} cards\nYour progress: {draw_progress(prog, message)}"}
     else:
         mess = {'ru': 'Ты нашел все карточки!',
                 'en': "You found all cards!"}
     bot.send_message(message.chat.id, mess[get_lang(message)])
+
+@bot.message_handler(commands=['hint'])
+def progress(message: types.Message):
+    user_photos = get_photos(message.chat.id)
+    while '' in user_photos:
+        user_photos.remove('')
+    if user_photos:
+        random_photo = random.choice(user_photos)
+        num = int(random_photo[5])
+        if num == 1:
+            mess = {'ru': 'Возможно, стоит попробовать остальные команды. Загляни в /help',
+                    'en': "Perhaps, it's worth trying the other commands. Check /help"}
+            bot.send_message(message.chat.id, mess[get_lang(message)])
+        elif num == 2:
+            mess = {'ru': 'Стоит проявить больше уважения',
+                    'en': "Should show more respect"}
+            bot.send_message(message.chat.id, mess[get_lang(message)])
+        elif num == 3:
+            mess = {'ru': 'А ты недостаточно терпеливый',
+                    'en': "You are not patient enough"}
+            bot.send_message(message.chat.id, mess[get_lang(message)])
+        elif num == 4:
+            mess = {'ru': 'Размер имеет значение',
+                    'en': "Size matters"}
+            bot.send_message(message.chat.id, mess[get_lang(message)])
+    else:
+        mess = {'ru': 'Они тебе больше не нужны 😎',
+                'en': "You don't need them anymore 😎"}
+        bot.send_message(message.chat.id, mess[get_lang(message)])
 
 @bot.message_handler(commands=['ru'])
 def set_ru(message: types.Message):
