@@ -14,8 +14,7 @@ from summarize import summarize
 bot = telebot.TeleBot(config.BOT_TOKEN)
 db.init_db()
 
-logging.basicConfig(level=logging.INFO,
-format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger()
 
 keys = [str(i) for i in range(1, 11)]
@@ -24,7 +23,7 @@ keys = [str(i) for i in range(1, 11)]
 def get_user(chat_id: int) -> dict:
     user = db.get_user(chat_id)
     if not user:
-        db.save_user(chat_id, count=0, progress=0, start_time=time.time())
+        db.save_user(chat_id, count=0, progress=0, start_time=time.time(), photos="photo1,photo2,photo3,photo4")
         user = db.get_user(chat_id)
     return user
 
@@ -81,7 +80,7 @@ def draw_progress(progress: int, message: types.Message) -> str:
 @bot.message_handler(commands=['start'])
 def start(message: types.Message):
     chat_id = message.chat.id
-    db.save_user(chat_id, count=0, progress=0, start_time=time.time(), photos="photo1,photo2,photo3,photo4")
+    db.save_user(chat_id, mark=0, count=0, progress=0, start_time=time.time(), photos="photo1,photo2,photo3,photo4")
     name = message.chat.first_name if message.chat.first_name else 'No_name'
     logger.info(f'Chat {name} (ID: {chat_id}) started bot')
     input_field = {'ru': 'Воспользуйтесь меню:', 'en': 'Use the menu:'}
@@ -90,14 +89,14 @@ def start(message: types.Message):
     keyboard.add({'ru': 'Да', 'en': 'Yes'}[get_lang(message)],
     {'ru': 'Нет', 'en': 'No'}[get_lang(message)])
     welcome_mess = {'ru': 'Привет! Хочешь представиться? (опционально)',
-    'en': 'Hy! Would you like to introduce yourself? (optionaly)'}
+                    'en': 'Hy! Would you like to introduce yourself? (optionaly)'}
     bot.send_message(chat_id, welcome_mess[get_lang(message)], reply_markup=keyboard)
 
 @bot.message_handler(func=lambda message: message.text in ["Да", "Yes"])
 def handle_yes(message: types.Message):
     db.save_user(message.chat.id, state="waiting_name")
     new_message = {'ru': "Так как тебя зовут?",
-    'en': "So what's your name?"}
+                   'en': "So what's your name?"}
     bot.send_message(message.chat.id, new_message[get_lang(message)], reply_markup=types.ReplyKeyboardRemove())
 
 @bot.message_handler(func=lambda message: message.text in ["Нет", 'No'])
@@ -105,7 +104,7 @@ def handle_no(message: types.Message):
     name = message.chat.first_name if message.chat.first_name else 'No_name'
     db.save_user(message.chat.id, state=name)
     new_message = {'ru': "Тогда отправляй голосовое, я расшифрую!",
-    'en': "Then send a voice message, I will decipher!"}
+                   'en': "Then send a voice message, I will decipher!"}
     bot.send_message(message.chat.id, new_message[get_lang(message)], reply_markup=types.ReplyKeyboardRemove())
 
 @bot.message_handler(func=lambda message: get_user(message.chat.id).get("state") == "waiting_name")
@@ -113,26 +112,33 @@ def handle_name(message: types.Message):
     name = message.text.strip()
     db.save_user(message.chat.id, state=name)
     new_message = {'ru': f"Приятно познакомиться, {name}! Отправляй голосовое, я расшифрую!",
-    'en': f"Nice to meet you, {name}! Send a voice message, I will decipher!"}
+                   'en': f"Nice to meet you, {name}! Send a voice message, I will decipher!"}
     bot.send_message(message.chat.id, new_message[get_lang(message)])
 
 @bot.message_handler(commands=['help'])
 def help(message: types.Message):
-    help_mess = {'ru': 'Рекомендую начать диалог с команды /start (сбрасывает прогресс). Затем пиши и отправляй голосовые или видеосообщения, я расшифрую! \nДоступные команды: \n/start \n/help \n/heart \n/progress \n/hint \n/ru \n/en',
-    'en': "It is recommended to start a dialogue with the /start command (resets progress). Then write and send voice or video messages, I will decipher! \nAvailable commands: \n/start \n/help \n/heart \n/progress \n/hint \n/ru \n/en"}
+    help_mess = {'ru': 'Рекомендую начать диалог с команды /start (сбрасывает прогресс, кроме total_time). Затем пиши и отправляй голосовые или видеосообщения, я расшифрую! \nДоступные команды: \n/start \n/help \n/heart \n/progress \n/leaderboard \n/hint \n/ru \n/en',
+                 'en': "It is recommended to start a dialogue with the /start command (resets progress, besides total_time). Then write and send voice or video messages, I will decipher! \nAvailable commands: \n/start \n/help \n/heart \n/progress \n/leaderboard \n/hint \n/ru \n/en"}
     bot.send_message(message.chat.id, help_mess[get_lang(message)])
 
 @bot.message_handler(commands=['heart'])
 def heart(message: types.Message):
     bot.send_photo(message.chat.id, open('photo1.jpg', 'rb'), message_effect_id="5159385139981059251")
+
     if make_progress('photo1', message.chat.id):
             new_message = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                            'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(message.chat.id, new_message[get_lang(message)])
+
             if get_prog(message) == 4:
                 user = get_user(message.chat.id)
-                new_message = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user["start_time"])//60} минут', 
-                               'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user['start_time'])//60} minutes to do this"}
+                if not user.get("total_time"):
+                    total_time = time.time() - user["start_time"]
+                    db.save_user(message.chat.id, total_time=total_time)
+                rank = db.get_rank(message.chat.id)
+
+                new_message = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(user["total_time"]) // 60} минут.\nТвое место в рейтинге: {rank}', 
+                               'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(user["total_time"]) // 60} minutes to do this.\nYour rank: {rank}"}
                 bot.send_message(message.chat.id, new_message[get_lang(message)], message_effect_id="5046509860389126442")
 
 @bot.message_handler(commands=['progress'])
@@ -150,6 +156,25 @@ def progress(message: types.Message):
     else:
         mess = {'ru': 'Ты нашел все карточки!',
                 'en': "You found all cards!"}
+    bot.send_message(message.chat.id, mess[get_lang(message)])
+
+@bot.message_handler(commands=['leaderboard'])
+def leaderboard(message: types.Message):
+    leaders = db.get_leaderboard(5)
+    if not leaders:
+        mess = {'ru': 'Пока никто не открыл все карточки 🙃',
+        'en': 'No one has finished yet 🙃'}
+        bot.send_message(message.chat.id, mess[get_lang(message)])
+        return
+
+    lines = []
+    for i, u in enumerate(leaders, start=1):
+        time = round(u['total_time'], 3)
+        name = u['state'] if u['state'] else f'User {u["chat_id"]}'
+        lines.append(f"{i}. {name} — {int(time) // 60}:{int(time) % 60}.{int((time - int(time)) * 1000)}")
+
+    mess = {'ru': "🏆 Таблица лидеров:\n" + "\n".join(lines),
+            'en': "🏆 Leaderboard:\n" + "\n".join(lines)}
     bot.send_message(message.chat.id, mess[get_lang(message)])
 
 @bot.message_handler(commands=['hint'])
@@ -213,14 +238,21 @@ def process_audio(message: types.Message, file_ext):
         mess = {'ru': 'Такое большое🥵 придется подождать', 
                 'en': "So big🥵 we'll have to wait"}
         bot.send_photo(chat_id, open('photo4.jpg', 'rb'), mess[get_lang(message)], has_spoiler=True)
+
         if make_progress('photo4', chat_id):
             mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                    'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(chat_id, mess[get_lang(message)])
+
             if get_prog(message) == 4:
-                user = get_user(chat_id)
-                mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user['start_time'])//60} минут', 
-                        'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user['start_time'])//60} minutes to do this"}
+                user = get_user(message.chat.id)
+                if not user.get("total_time"):
+                    total_time = time.time() - user["start_time"]
+                    db.save_user(message.chat.id, total_time=total_time)
+                rank = db.get_rank(message.chat.id)
+
+                mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(user["total_time"]) // 60} минут.\nТвое место в рейтинге: {rank}', 
+                        'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(user["total_time"]) // 60} minutes to do this.\nYour rank: {rank}"}
                 bot.send_message(chat_id, mess[get_lang(message)], message_effect_id="5046509860389126442")
 
     elif duration > 50:
@@ -247,13 +279,21 @@ def process_audio(message: types.Message, file_ext):
     elif count == 10:
         mess = {'ru': 'Тебе не надоело?', 'en': "Aren't you tired of this?"}
         bot.send_photo(chat_id, open('photo3.jpg', 'rb'), mess[get_lang(message)])
+
         if make_progress('photo3', chat_id):
             mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                     'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(chat_id, mess[get_lang(message)])
+
             if get_prog(message) == 4:
-                mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user['start_time'])//60} минут', 
-                        'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user['start_time'])//60} minutes to do this"}
+                user = get_user(message.chat.id)
+                if not user.get("total_time"):
+                    total_time = time.time() - user["start_time"]
+                    db.save_user(message.chat.id, total_time=total_time)
+                rank = db.get_rank(message.chat.id)
+
+                mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(user["total_time"]) // 60} минут.\nТвое место в рейтинге: {rank}', 
+                        'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(user["total_time"]) // 60} minutes to do this.\nYour rank: {rank}"}
                 bot.send_message(chat_id, mess[get_lang(message)], message_effect_id="5046509860389126442")
 
     message_text = converter.audio_to_text()
@@ -389,14 +429,21 @@ def get_mark(message: types.Message):
         mess = {'ru': 'Спасибо за максимальную оценку!', 
                 'en': "Thank you for the maximum rating!"}
         bot.send_photo(message.chat.id, open('photo2.jpg', 'rb'), mess[get_lang(message)], message_effect_id="5104841245755180586")
+
         if make_progress('photo2', message.chat.id):
             mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
                    'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(message.chat.id, mess[get_lang(message)])
+            
             if get_prog(message) == 4:
                 user = get_user(message.chat.id)
-                mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(time.time() - user['start_time'])//60} минут', 
-                        'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(time.time() - user['start_time'])//60} minutes to do this"}
+                if not user.get("total_time"):
+                    total_time = time.time() - user["start_time"]
+                    db.save_user(message.chat.id, total_time=total_time)
+                rank = db.get_rank(message.chat.id)
+
+                mess = {'ru': f'А ты не промах. Ты открыл все карточки!\nУ тебя ушло на это {round(user["total_time"]) // 60} минут.\nТвое место в рейтинге: {rank}', 
+                        'en': f"You're no slouch. You've opened all the cards!\nIt took you {round(user["total_time"]) // 60} minutes to do this.\nYour rank: {rank}"}
                 bot.send_message(message.chat.id, mess[get_lang(message)], message_effect_id="5046509860389126442")
     else:
         mess = {'ru': 'Спасибо за оценку! Отправляй еще голосовые, если надо', 
