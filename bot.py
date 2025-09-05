@@ -36,7 +36,7 @@ def get_prog(message: types.Message) -> int:
     user = get_user(message.chat.id)
     return user.get("progress", 0)
 
-def get_photos(chat_id: int):
+def get_photos(chat_id: int) -> list:
     user = get_user(chat_id)
     return user.get("photos").split(",") if user.get("photos") else []
 
