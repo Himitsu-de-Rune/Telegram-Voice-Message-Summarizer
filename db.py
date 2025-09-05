@@ -16,6 +16,7 @@ def init_db():
                 lang TEXT DEFAULT 'ru',
                 progress INTEGER DEFAULT 0,
                 start_time REAL,
+                total_time REAL,
                 photos TEXT
             )
             """)
@@ -36,8 +37,8 @@ def save_user(chat_id: int, **kwargs):
                 conn.execute(f"UPDATE users SET {fields} WHERE chat_id=?", values)
             else:
                 conn.execute("""
-                    INSERT INTO users (chat_id, state, voice_text, mark, count, lang, progress, start_time, photos)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO users (chat_id, state, voice_text, mark, count, lang, progress, start_time, total_time, photos)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     chat_id,
                     kwargs.get("state"),
@@ -47,5 +48,28 @@ def save_user(chat_id: int, **kwargs):
                     kwargs.get("lang", "ru"),
                     kwargs.get("progress", 0),
                     kwargs.get("start_time"),
+                    kwargs.get("total_time"),
                     kwargs.get("photos", "photo1,photo2,photo3,photo4")
                 ))
+
+def get_leaderboard(limit=5):
+    with closing(sqlite3.connect(DB_NAME)) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute("""
+            SELECT chat_id, state, total_time
+            FROM users
+            WHERE total_time IS NOT NULL
+            ORDER BY total_time ASC
+            LIMIT ?
+        """, (limit,)).fetchall()
+        return [dict(row) for row in rows]
+
+def get_rank(chat_id: int):
+    with closing(sqlite3.connect(DB_NAME)) as conn:
+        row = conn.execute("""
+            SELECT COUNT(*)+1 as rank FROM users
+            WHERE total_time IS NOT NULL
+              AND total_time <
+                  (SELECT total_time FROM users WHERE chat_id=?)
+        """, (chat_id,)).fetchone()
+        return row[0] if row else None
