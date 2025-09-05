@@ -32,5 +32,5 @@ This project is a Telegram bot that converts voice and video messages into text 
 - The bot saves and converts it into .wav.  
 - The audio is transcribed into text.  
 - The text is summarized by a local Hugging Face model.  
-- **User progress (language, scores, opened cards, statistics) is saved in `users.db` via SQLite.**  
+- **User progress (language, scores, etc.) is saved in `users.db` via SQLite.**  
 - The user receives either the full transcript or a short, meaningful summary.  
