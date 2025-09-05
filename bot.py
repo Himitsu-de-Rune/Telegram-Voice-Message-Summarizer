@@ -261,7 +261,7 @@ def handle_choice(message: types.Message):
             bot.send_message(message.chat.id, text, reply_markup=types.ReplyKeyboardRemove())
         elif message.text in ["Краткий пересказ", "Brief summary"]:
             short_text = summarize(text)
-            if len(short_text) > int(len(text) * 1.2):
+            if len(short_text) > int(len(text) * 1.2) or len(short_text.split()) > len(set(short_text.split())) * 3:
                 mess = {'ru': 'Что-то пошло не так... Лучше отправлю тебе полную версию',
                         'en': "Something went wrong... I'd better send you the full version"}
                 bot.send_message(message.chat.id, mess[get_lang(message)])
