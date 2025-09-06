@@ -46,10 +46,10 @@ def make_progress(photo_name: str, chat_id: int) -> bool:
     photos = get_photos(chat_id)
     progress = get_user(chat_id).get("progress", 0)
     if not photos:
-        return True
+        return False
     elif photo_name in photos:
         progress += 1
-        photos[int(photo_name[5]) - 1] = ''
+        photos.remove(photo_name)
         save_photos(chat_id, photos, progress)
         return True
     return False
@@ -58,23 +58,23 @@ def has_english(text: str) -> bool:
     return bool(re.search(r"[A-Za-z]", text))
 
 def draw_progress(progress: int, message: types.Message) -> str:
-    paint = []
-    paint.append('[')
+    chart = []
+    chart.append('[')
     if progress == 0:
         mess = {'ru': 'Авторизуйся с помощью /start для отображения прогресса',
                 'en': "Login with /start to display progress"}
         return ''.join(mess[get_lang(message)])
     elif progress in [1, 2, 3]:
         for _ in range(progress * 3 - 1):
-            paint.append('—')
-        paint.append('●')
+            chart.append('—')
+        chart.append('●')
         for _ in range(11 - progress * 3):
-            paint.append('. . ')
+            chart.append('. . ')
     elif progress == 4:
         for _ in range(12):
-            paint.append('—')
-    paint.append(f'] {progress*25}%')
-    return ''.join(paint)
+            chart.append('—')
+    chart.append(f'] {progress*25}%')
+    return ''.join(chart)
 
 
 @bot.message_handler(commands=['start'])
@@ -87,7 +87,7 @@ def start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True,
     input_field_placeholder=input_field[get_lang(message)])
     keyboard.add({'ru': 'Да', 'en': 'Yes'}[get_lang(message)],
-    {'ru': 'Нет', 'en': 'No'}[get_lang(message)])
+                 {'ru': 'Нет', 'en': 'No'}[get_lang(message)])
     welcome_mess = {'ru': 'Привет! Хочешь представиться? (опционально)',
                     'en': 'Hy! Would you like to introduce yourself? (optionaly)'}
     bot.send_message(chat_id, welcome_mess[get_lang(message)], reply_markup=keyboard)
@@ -183,24 +183,21 @@ def leaderboard(message: types.Message):
 @bot.message_handler(commands=['hint'])
 def progress(message: types.Message):
     user_photos = get_photos(message.chat.id)
-    while '' in user_photos:
-        user_photos.remove('')
     if user_photos:
         random_photo = random.choice(user_photos)
-        num = int(random_photo[5])
-        if num == 1:
+        if random_photo == 'photo1':
             mess = {'ru': 'Возможно, стоит попробовать остальные команды. Загляни в /help',
                     'en': "Perhaps, it's worth trying the other commands. Check /help"}
             bot.send_message(message.chat.id, mess[get_lang(message)])
-        elif num == 2:
+        elif random_photo == 'photo2':
             mess = {'ru': 'Стоит проявить больше уважения',
                     'en': "Should show more respect"}
             bot.send_message(message.chat.id, mess[get_lang(message)])
-        elif num == 3:
+        elif random_photo == 'photo3':
             mess = {'ru': 'А ты недостаточно терпеливый',
                     'en': "You are not patient enough"}
             bot.send_message(message.chat.id, mess[get_lang(message)])
-        elif num == 4:
+        elif random_photo == 'photo4':
             mess = {'ru': 'Размер имеет значение',
                     'en': "Size matters"}
             bot.send_message(message.chat.id, mess[get_lang(message)])
@@ -324,12 +321,11 @@ def process_audio(message: types.Message, file_ext):
     
     if duration > 5:
         input_field = {'ru': 'Воспользуйтесь меню:', 'en': 'Use the menu:'}
-        key_1 = {'ru': 'Полный рассказ', 'en': 'Full story'}
-        key_2 = {'ru': 'Краткий пересказ', 'en': 'Brief summary'}
         keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, 
                                              one_time_keyboard=True, 
                                              input_field_placeholder=input_field[get_lang(message)])
-        keyboard.add(key_1[get_lang(message)], key_2[get_lang(message)])
+        keyboard.add({'ru': 'Полный рассказ', 'en': 'Full story'}[get_lang(message)], 
+                     {'ru': 'Краткий пересказ', 'en': 'Brief summary'}[get_lang(message)])
         name = user.get("state") or ''
         mess = {'ru': f"Готово! {name}, тебе полный рассказ или краткий пересказ?",
                 'en': f'Ready! {name}, you want the full story or a brief summary?'}
@@ -349,12 +345,11 @@ def process_audio(message: types.Message, file_ext):
 
         if count % 8 == 0 and mark > 0:
                 input_field = {'ru': 'Воспользуйтесь меню:', 'en': 'Use the menu:'}
-                key_1 = {'ru': 'Хочу', 'en': "Let's change"}
-                key_2 = {'ru': 'Не хочу', 'en': "I wouldn't"}
                 keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, 
                                                      one_time_keyboard=True, 
                                                      input_field_placeholder=input_field[get_lang(message)]) 
-                keyboard.add(key_1[get_lang(message)], key_2[get_lang(message)])
+                keyboard.add({'ru': 'Хочу', 'en': "Let's change"}[get_lang(message)], 
+                             {'ru': 'Не хочу', 'en': "I wouldn't"}[get_lang(message)])
                 mess = {'ru': 'Не хочешь поменять оценку?', 
                         'en': "Would you want to change your rating?"}
                 bot.send_message(message.chat.id, mess[get_lang(message)], reply_markup=keyboard)
@@ -396,12 +391,11 @@ def handle_choice(message: types.Message):
                 
         if count % 8 == 0 and mark > 0:
             input_field = {'ru': 'Воспользуйтесь меню:', 'en': 'Use the menu:'}
-            key_1 = {'ru': 'Хочу', 'en': "Let's change"}
-            key_2 = {'ru': 'Не хочу', 'en': "I wouldn't"}
             keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True, 
                                                  one_time_keyboard=True, 
                                                  input_field_placeholder=input_field[get_lang(message)]) 
-            keyboard.add(key_1[get_lang(message)], key_2[get_lang(message)])
+            keyboard.add({'ru': 'Хочу', 'en': "Let's change"}[get_lang(message)], 
+                         {'ru': 'Не хочу', 'en': "I wouldn't"}[get_lang(message)])
             mess = {'ru': 'Не хочешь поменять оценку?', 
                     'en': "Would you want to change your rating?"}
             bot.send_message(message.chat.id, mess[get_lang(message)], reply_markup=keyboard)
