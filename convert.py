@@ -10,7 +10,7 @@ class Converter:
         wav_path = base + ".wav"
 
         subprocess.run([
-            r'C:\Users\Himitsu\Desktop\Projects\MyBot\ffmpeg\bin\ffmpeg.exe',
+            r'ffmpeg\bin\ffmpeg.exe',
             '-v', 'quiet',
             '-i', path_to_file,
             wav_path])
@@ -39,3 +39,4 @@ class Converter:
 
 
         return " ".join(full_text)
+
