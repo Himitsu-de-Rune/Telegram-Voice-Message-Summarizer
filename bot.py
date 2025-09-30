@@ -103,16 +103,16 @@ def handle_yes(message: types.Message):
 def handle_no(message: types.Message):
     name = message.chat.first_name if message.chat.first_name else 'No_name'
     db.save_user(message.chat.id, state=name)
-    new_message = {'ru': "Тогда отправляй голосовое, я расшифрую!",
-                   'en': "Then send a voice message, I will decipher!"}
+    new_message = {'ru': "Тогда отправляй голосовое, я расшифрую! Для большей информации напиши /help",
+                   'en': "Then send a voice message, I will decipher! For more info write /help"}
     bot.send_message(message.chat.id, new_message[get_lang(message)], reply_markup=types.ReplyKeyboardRemove())
 
 @bot.message_handler(func=lambda message: get_user(message.chat.id).get("state") == "waiting_name")
 def handle_name(message: types.Message):
     name = message.text.strip()
     db.save_user(message.chat.id, state=name)
-    new_message = {'ru': f"Приятно познакомиться, {name}! Отправляй голосовое, я расшифрую!",
-                   'en': f"Nice to meet you, {name}! Send a voice message, I will decipher!"}
+    new_message = {'ru': f"Приятно познакомиться, {name}! Отправляй голосовое, я расшифрую! Для большей информации напиши /help",
+                   'en': f"Nice to meet you, {name}! Send a voice message, I will decipher! For more info write /help"}
     bot.send_message(message.chat.id, new_message[get_lang(message)])
 
 @bot.message_handler(commands=['help'])
