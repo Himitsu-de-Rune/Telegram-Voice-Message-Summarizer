@@ -165,7 +165,7 @@ def leaderboard(message: types.Message):
     leaders = db.get_leaderboard(5)
     if not leaders:
         mess = {'ru': 'Пока никто не открыл все карточки 🙃',
-        'en': 'No one has finished yet 🙃'}
+                'en': 'No one has finished yet 🙃'}
         bot.send_message(message.chat.id, mess[get_lang(message)])
         return
 
@@ -241,7 +241,7 @@ def process_audio(message: types.Message, file_ext):
 
         if make_progress('photo4', chat_id):
             mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
-                   'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
+                    'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(chat_id, mess[get_lang(message)])
 
             if get_prog(message) == 4:
@@ -433,7 +433,7 @@ def get_mark(message: types.Message):
 
         if make_progress('photo2', message.chat.id):
             mess = {'ru': f'Ты открыл {get_prog(message)}-ю карточку\nТвой прогресс: {draw_progress(get_prog(message), message)}', 
-                   'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
+                    'en': f'You have opened the {get_prog(message)}-th card\nYour progress: {draw_progress(get_prog(message), message)}'}
             bot.send_message(message.chat.id, mess[get_lang(message)])
             
             if get_prog(message) == 4:
